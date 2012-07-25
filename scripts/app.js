@@ -48,6 +48,17 @@
       }
     })(),
 
+    // Indicates whether or not this browser supports toDataURL for caching images. Thanks
+    // to Mike Chambers:
+    //
+    // http://www.mikechambers.com/blog/2011/02/01/detecting-canvas-todataurl-support-in-browsers/
+    //
+    hasToDataURL: (function () {
+      var canvas = document.createElement('canvas');
+      var data = canvas.toDataURL('image/png');
+      return data.indexOf('data:image/png') == 0;
+    })(),
+
     // Artificial delay when the app first starts to simulate loading images from a remote
     // API.
     loadPhotosDelay: 3000,
@@ -649,6 +660,12 @@
   //
   function loadPhotos(photosHandler) {
     function loadCachedImage(localStorageKey, url, contentType, callback) {
+      if (!Config.hasToImageURL) {
+        // We can't cache images with this browser.
+        callback(url);
+        return;
+      }
+
       var localStorageImageString = null;
 
       if (Config.hasLocalStorage) {
